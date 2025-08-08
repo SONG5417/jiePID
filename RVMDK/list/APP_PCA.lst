@@ -1,0 +1,189 @@
+C51 COMPILER V9.59.0.0   APP_PCA                                                           10/12/2020 13:52:02 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE APP_PCA
+OBJECT MODULE PLACED IN .\list\APP_PCA.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\App\src\APP_PCA.c LARGE OMF2 OPTIMIZE(8,SPEED) BROWSE INCDIR(..\Drive
+                    -r\inc;..\User;..\App\inc) DEBUG PRINT(.\list\APP_PCA.lst) TABS(2) OBJECT(.\list\APP_PCA.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------------------------*/
+   2          /* --- STC MCU Limited ------------------------------------------------*/
+   3          /* --- STC 1T Series MCU Demo Programme -------------------------------*/
+   4          /* --- Mobile: (86)13922805190 ----------------------------------------*/
+   5          /* --- Fax: 86-0513-55012956,55012947,55012969 ------------------------*/
+   6          /* --- Tel: 86-0513-55012928,55012929,55012966 ------------------------*/
+   7          /* --- Web: www.STCMCU.com --------------------------------------------*/
+   8          /* --- Web: www.STCMCUDATA.com  ---------------------------------------*/
+   9          /* --- QQ:  800003751 -------------------------------------------------*/
+  10          /* 如果要在程序中使用此代码,请在程序中注明使用了STC的资料及程序            */
+  11          /*---------------------------------------------------------------------*/
+  12          
+  13          #include  "APP.h"
+  14          #include  "STC8G_PCA.h"
+  15          #include  "STC8G_H_GPIO.h"
+  16          #include  "STC8G_H_NVIC.h"
+  17          
+  18          /*************   功能说明   ***************
+  19          
+  20          本例程基于STC8G1K08-20PIN进行编写测试，STC8G系列芯片可通用参考.
+  21          
+  22          输出3路变化的PWM信号, 类似"呼吸灯"的驱动.
+  23          PWM0  为8位PWM.
+  24          PWM1  为7位PWM.
+  25          PWM2  为10位PWM.
+  26          
+  27          下载时, 选择时钟 24MHz (用户可在"config.h"修改频率).
+  28          
+  29          ******************************************/
+  30          
+  31          
+  32          //========================================================================
+  33          //                               本地常量声明 
+  34          //========================================================================
+  35          
+  36          
+  37          //========================================================================
+  38          //                               本地变量声明
+  39          //========================================================================
+  40          
+  41          u16 pwm0,pwm1,pwm2;
+  42          bit B_PWM0_Dir,B_PWM1_Dir,B_PWM2_Dir; //方向, 0为+, 1为-.
+  43          
+  44          //========================================================================
+  45          //                               本地函数声明
+  46          //========================================================================
+  47          
+  48          
+  49          //========================================================================
+  50          //                            外部函数和变量声明
+  51          //========================================================================
+  52          
+  53          
+  54          //========================================================================
+C51 COMPILER V9.59.0.0   APP_PCA                                                           10/12/2020 13:52:02 PAGE 2   
+
+  55          // 函数: PCA_Output_init
+  56          // 描述: 用户初始化程序.
+  57          // 参数: None.
+  58          // 返回: None.
+  59          // 版本: V1.0, 2020-09-28
+  60          //========================================================================
+  61          void PCA_Output_init(void)
+  62          {
+  63   1        GPIO_InitTypeDef  GPIO_InitStructure;       //结构定义
+  64   1        PCA_InitTypeDef   PCA_InitStructure;
+  65   1      
+  66   1        GPIO_InitStructure.Pin  = GPIO_Pin_All;     //指定要初始化的IO, GPIO_Pin_0 ~ GPIO_Pin_7, 或操作
+  67   1        GPIO_InitStructure.Mode = GPIO_PullUp;      //指定IO的输入或输出方式,GPIO_PullUp,GPIO_HighZ,GPIO_OUT_OD,GPIO
+             -_OUT_PP
+  68   1        GPIO_Inilize(GPIO_P1,&GPIO_InitStructure);  //初始化
+  69   1      
+  70   1        GPIO_InitStructure.Pin  = GPIO_Pin_7;       //指定要初始化的IO, GPIO_Pin_0 ~ GPIO_Pin_7, 或操作
+  71   1        GPIO_InitStructure.Mode = GPIO_PullUp;      //指定IO的输入或输出方式,GPIO_PullUp,GPIO_HighZ,GPIO_OUT_OD,GPIO
+             -_OUT_PP
+  72   1        GPIO_Inilize(GPIO_P3,&GPIO_InitStructure);  //初始化
+  73   1        //--------------------------------------------
+  74   1        PCA_InitStructure.PCA_Clock    = PCA_Clock_1T;    //PCA_Clock_1T, PCA_Clock_2T, PCA_Clock_4T, PCA_Clock_6T,
+             - PCA_Clock_8T, PCA_Clock_12T, PCA_Clock_Timer0_OF, PCA_Clock_ECI
+  75   1      //  PCA_InitStructure.PCA_Interrupt_Mode = DISABLE;   //ENABLE, DISABLE
+  76   1      //  PCA_InitStructure.PCA_Polity   = Polity_0;      //指定中断优先级(低到高) Polity_0,Polity_1,Polity_2,Polity
+             -_3
+  77   1        PCA_InitStructure.PCA_RUN      = DISABLE;       //ENABLE, DISABLE
+  78   1        PCA_Init(PCA_Counter,&PCA_InitStructure);     //设置公用Counter
+  79   1      
+  80   1        PCA_InitStructure.PCA_Mode     = PCA_Mode_PWM;    //PCA_Mode_PWM, PCA_Mode_Capture, PCA_Mode_SoftTimer, PCA
+             -_Mode_HighPulseOutput
+  81   1        PCA_InitStructure.PCA_PWM_Wide = PCA_PWM_8bit;    //PCA_PWM_8bit, PCA_PWM_7bit, PCA_PWM_6bit, PCA_PWM_10bit
+  82   1      //  PCA_InitStructure.PCA_Interrupt_Mode = DISABLE;   //PCA_Rise_Active, PCA_Fall_Active, ENABLE, DISABLE
+  83   1        PCA_InitStructure.PCA_Value    = 128 << 8;        //对于PWM,高8位为PWM占空比
+  84   1        PCA_Init(PCA0,&PCA_InitStructure);
+  85   1      
+  86   1        PCA_InitStructure.PCA_Mode     = PCA_Mode_PWM;    //PCA_Mode_PWM, PCA_Mode_Capture, PCA_Mode_SoftTimer, PCA
+             -_Mode_HighPulseOutput
+  87   1        PCA_InitStructure.PCA_PWM_Wide = PCA_PWM_7bit;    //PCA_PWM_8bit, PCA_PWM_7bit, PCA_PWM_6bit, PCA_PWM_10bit
+  88   1      //  PCA_InitStructure.PCA_Interrupt_Mode = DISABLE;   //PCA_Rise_Active, PCA_Fall_Active, ENABLE, DISABLE
+  89   1        PCA_InitStructure.PCA_Value    = 64 << 8;         //对于PWM,高8位为PWM占空比
+  90   1        PCA_Init(PCA1,&PCA_InitStructure);
+  91   1      
+  92   1        PCA_InitStructure.PCA_Mode     = PCA_Mode_PWM;    //PCA_Mode_PWM, PCA_Mode_Capture, PCA_Mode_SoftTimer, PCA
+             -_Mode_HighPulseOutput
+  93   1        PCA_InitStructure.PCA_PWM_Wide = PCA_PWM_10bit;   //PCA_PWM_8bit, PCA_PWM_7bit, PCA_PWM_6bit, PCA_PWM_10bi
+             -t
+  94   1      //  PCA_InitStructure.PCA_Interrupt_Mode = DISABLE;   //PCA_Rise_Active, PCA_Fall_Active, ENABLE, DISABLE
+  95   1        PCA_InitStructure.PCA_Value    = 32 << 8;         //对于PWM,高8位为PWM占空比
+  96   1        PCA_Init(PCA2,&PCA_InitStructure);
+  97   1      
+  98   1        NVIC_PCA_Init(PCA_Counter,PCA_Mode_PWM,Polity_0);
+  99   1        NVIC_PCA_Init(PCA0,PCA_Mode_PWM,Polity_0);
+ 100   1        NVIC_PCA_Init(PCA1,PCA_Mode_PWM,Polity_0);
+ 101   1        NVIC_PCA_Init(PCA2,PCA_Mode_PWM,Polity_0);
+ 102   1        CR = 1;             //启动PCA
+ 103   1        //--------------------------------------------
+ 104   1        pwm0 = 128;
+ 105   1        pwm1 = 64;
+ 106   1        pwm2 = 512;
+ 107   1        B_PWM0_Dir = 0;
+ 108   1        B_PWM1_Dir = 0;
+C51 COMPILER V9.59.0.0   APP_PCA                                                           10/12/2020 13:52:02 PAGE 3   
+
+ 109   1        B_PWM2_Dir = 0;
+ 110   1      
+ 111   1        UpdatePcaPwm(PCA0,pwm0);
+ 112   1        UpdatePcaPwm(PCA1,pwm1);
+ 113   1        UpdatePcaPwm(PCA2,pwm2);
+ 114   1      }
+ 115          
+ 116          
+ 117          //========================================================================
+ 118          // 函数: Sample_PCA_Output
+ 119          // 描述: 用户应用程序.
+ 120          // 参数: None.
+ 121          // 返回: None.
+ 122          // 版本: V1.0, 2020-09-28
+ 123          //========================================================================
+ 124          void Sample_PCA_Output(void)
+ 125          {
+ 126   1        if(B_PWM0_Dir)
+ 127   1        {
+ 128   2          if(--pwm0 <= 16)  B_PWM0_Dir = 0; //8位PWM
+ 129   2        }
+ 130   1        else  if(++pwm0 >= 240) B_PWM0_Dir = 1; //8位PWM
+ 131   1        UpdatePcaPwm(PCA0,pwm0);
+ 132   1      
+ 133   1        if(B_PWM1_Dir)
+ 134   1        {
+ 135   2          if(--pwm1 <= 8)   B_PWM1_Dir = 0; //7位PWM
+ 136   2        }
+ 137   1        else  if(++pwm1 >= 120) B_PWM1_Dir = 1; //7位PWM
+ 138   1        UpdatePcaPwm(PCA1,pwm1);
+ 139   1      
+ 140   1        if(B_PWM2_Dir)
+ 141   1        {
+ 142   2          if(--pwm2 <= 24)    B_PWM2_Dir = 0; //10位PWM
+ 143   2        }
+ 144   1        else  if(++pwm2 >= 1000)  B_PWM2_Dir = 1; //10位PWM
+ 145   1        UpdatePcaPwm(PCA2,pwm2);
+ 146   1      }
+ 147          
+ 148          
+ 149          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    443    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      6      10
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

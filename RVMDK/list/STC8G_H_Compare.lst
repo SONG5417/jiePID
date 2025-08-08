@@ -1,0 +1,62 @@
+C51 COMPILER V9.59.0.0   STC8G_H_COMPARE                                                   07/12/2025 10:38:01 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE STC8G_H_COMPARE
+OBJECT MODULE PLACED IN .\list\STC8G_H_Compare.obj
+COMPILER INVOKED BY: D:\KEILC51\C51\BIN\C51.EXE ..\Driver\src\STC8G_H_Compare.c LARGE OMF2 OPTIMIZE(8,SPEED) BROWSE INCD
+                    -IR(..\Driver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\STC8G_H_Compare.lst) OBJECT(.\list\STC8G_H_Compare.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------------------------*/
+   2          /* --- STC MCU Limited ------------------------------------------------*/
+   3          /* --- STC 1T Series MCU Demo Programme -------------------------------*/
+   4          /* --- Mobile: (86)13922805190 ----------------------------------------*/
+   5          /* --- Fax: 86-0513-55012956,55012947,55012969 ------------------------*/
+   6          /* --- Tel: 86-0513-55012928,55012929,55012966 ------------------------*/
+   7          /* --- Web: www.STCMCU.com --------------------------------------------*/
+   8          /* --- Web: www.STCMCUDATA.com  ---------------------------------------*/
+   9          /* --- QQ:  800003751 -------------------------------------------------*/
+  10          /* Èç¹ûÒªÔÚ³ÌÐòÖÐÊ¹ÓÃ´Ë´úÂë,ÇëÔÚ³ÌÐòÖÐ×¢Ã÷Ê¹ÓÃÁËSTCµÄ×ÊÁÏ¼°³ÌÐò            */
+  11          /*---------------------------------------------------------------------*/
+  12          
+  13          #include        "STC8G_H_Compare.h"
+  14          
+  15          //========================================================================
+  16          // º¯Êý:void    CMP_Inilize(CMP_InitDefine *CMPx)
+  17          // ÃèÊö: ±È½ÏÆ÷³õÊ¼»¯³ÌÐò.
+  18          // ²ÎÊý: CMPx: ½á¹¹²ÎÊý,Çë²Î¿¼compare.hÀïµÄ¶¨Òå.
+  19          // ·µ»Ø: none.
+  20          // °æ±¾: V1.0, 2012-10-22
+  21          //========================================================================
+  22          void    CMP_Inilize(CMP_InitDefine *CMPx)
+  23          {
+  24   1              CMPCR1 &= 0x30;
+  25   1              CMPCR2 = CMPx->CMP_OutDelayDuty & 0x3f;                                                                         //±È½Ï½á¹û±ä»¯ÑÓÊ±ÖÜÆÚÊý, 0~63
+  26   1              if(CMPx->CMP_EN == ENABLE)                              CMPCR1 |= CMPEN;                                //ÔÊÐí±È½ÏÆ÷            ENABLE,DISABLE
+  27   1              if(CMPx->CMP_P_Select  == CMP_P_ADC)    CMPCR1 |= PIS;                  //±È½ÏÆ÷ÊäÈëÕý¼«Ñ¡Ôñ, CMP_P_P37: Ñ¡ÔñP3.7×öÕýÊäÈë, 
+             -CMP_P_ADC: ÓÉADCÄ£ÄâÊäÈë¶Ë×öÕýÊäÈë.
+  28   1              if(CMPx->CMP_N_Select  == CMP_N_P36)    CMPCR1 |= NIS;                  //±È½ÏÆ÷ÊäÈë¸º¼«Ñ¡Ôñ, CMP_N_GAP: Ñ¡ÔñÄÚ²¿BandGap¾­¹
+             -ýOPºóµÄµçÑ¹×ö¸ºÊäÈë, CMP_N_P36: Ñ¡ÔñP3.6×ö¸ºÊäÈë.
+  29   1              if(CMPx->CMP_Outpt_En == ENABLE)                CMPCR1 |= CMPOE;                        //ÔÊÐí±È½Ï½á¹ûÊä³öµ½P3.4/P4.1,   ENABLE,DISABLE
+  30   1              if(CMPx->CMP_InvCMPO     == ENABLE)             CMPCR2 |= INVCMPO;      //±È½ÏÆ÷Êä³öÈ¡·´,       ENABLE,DISABLE
+  31   1              if(CMPx->CMP_100nsFilter == DISABLE)    CMPCR2 |= DISFLT;               //ÄÚ²¿0.1uFÂË²¨,        ENABLE,DISABLE
+  32   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     87    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

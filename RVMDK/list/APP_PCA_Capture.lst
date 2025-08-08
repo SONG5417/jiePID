@@ -1,0 +1,183 @@
+C51 COMPILER V9.59.0.0   APP_PCA_CAPTURE                                                   07/12/2025 10:38:00 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE APP_PCA_CAPTURE
+OBJECT MODULE PLACED IN .\list\APP_PCA_Capture.obj
+COMPILER INVOKED BY: D:\KEILC51\C51\BIN\C51.EXE ..\App\src\APP_PCA_Capture.c LARGE OMF2 OPTIMIZE(8,SPEED) BROWSE INCDIR(
+                    -..\Driver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\APP_PCA_Capture.lst) OBJECT(.\list\APP_PCA_Capture.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------------------------*/
+   2          /* --- STC MCU Limited ------------------------------------------------*/
+   3          /* --- STC 1T Series MCU Demo Programme -------------------------------*/
+   4          /* --- Mobile: (86)13922805190 ----------------------------------------*/
+   5          /* --- Fax: 86-0513-55012956,55012947,55012969 ------------------------*/
+   6          /* --- Tel: 86-0513-55012928,55012929,55012966 ------------------------*/
+   7          /* --- Web: www.STCMCU.com --------------------------------------------*/
+   8          /* --- Web: www.STCMCUDATA.com  ---------------------------------------*/
+   9          /* --- QQ:  800003751 -------------------------------------------------*/
+  10          /* Èç¹ûÒªÔÚ³ÌÐòÖÐÊ¹ÓÃ´Ë´úÂë,ÇëÔÚ³ÌÐòÖÐ×¢Ã÷Ê¹ÓÃÁËSTCµÄ×ÊÁÏ¼°³ÌÐò            */
+  11          /*---------------------------------------------------------------------*/
+  12          
+  13          #include        "APP.h"
+  14          #include        "STC8G_PCA.h"
+  15          #include        "STC8G_H_GPIO.h"
+  16          #include        "STC8G_H_UART.h"
+  17          #include        "STC8G_H_NVIC.h"
+  18          
+  19          /*************   ¹¦ÄÜËµÃ÷   ***************
+  20          
+  21          ±¾Àý³Ì»ùÓÚSTC8G1K08-20PIN½øÐÐ±àÐ´²âÊÔ£¬STC8GÏµÁÐÐ¾Æ¬¿ÉÍ¨ÓÃ²Î¿¼.
+  22          
+  23          PCA0  ÉèÖÃÎª8Î»PWM. P1.1Êä³ö±ä»¯µÄPWMÐÅºÅ, ÀàËÆ"ºôÎüµÆ"µÄÇý¶¯.
+  24          PCA1  ÉèÖÃÎª²¶»ñ. ¿ÉÒÔÁ¬½Óµ½P1.1»òÕßP3.7ÓÃÀ´²âÊÔ²¶»ñ, ²¶»ñµÄÊ±ÖÓÊý´Ó´®¿Ú1Êä³ö. Ò²¿ÉÒÔ´ÓÍâ²¿ÊäÈëÒ»¸öÐÅºÅÀ´²
+             -¶»ñ.
+  25          PCA2  ÉèÖÃÎª16Î»Èí¼þ¶¨Ê±, ¶¨Ê±Ê±¼äÎª15000¸öPCAÊ±ÖÓ, ²¢ÇÒ´ÓP3.7Êä³öÕâ¸öÐÅºÅ,Êä³öÖÜÆÚÎª30000¸öPCAÊ±ÖÓ.
+  26          
+  27          ²¶»ñÂö¿íÊ±¼ä=²¶»ñµÄÊ±ÖÓÊý/PCAÊ±ÖÓÔ´, ±ÈÈç ²¶»ñµÄÊ±ÖÓÊý = 256, PCAÊ±ÖÓÔ´ = 22.1184MHz(1T), Âö¿í = 256/22.11
+             -84MHz = 11.57us.
+  28          
+  29          ÏÂÔØÊ±, Ñ¡ÔñÊ±ÖÓ 22.1184MHz (ÓÃ»§¿ÉÔÚ"config.h"ÐÞ¸ÄÆµÂÊ).
+  30          
+  31          ******************************************/
+  32          
+  33          
+  34          //========================================================================
+  35          //                               ±¾µØ³£Á¿ÉùÃ÷   
+  36          //========================================================================
+  37          
+  38          
+  39          //========================================================================
+  40          //                               ±¾µØ±äÁ¿ÉùÃ÷
+  41          //========================================================================
+  42          
+  43          static u8       cnt0;
+  44          static u8       pwm0;           //pwm
+  45          static bit      B_PWM0_Dir;     //·½Ïò, 0Îª+, 1Îª-.
+  46          
+  47          //========================================================================
+  48          //                               ±¾µØº¯ÊýÉùÃ÷
+  49          //========================================================================
+  50          
+  51          
+  52          //========================================================================
+C51 COMPILER V9.59.0.0   APP_PCA_CAPTURE                                                   07/12/2025 10:38:00 PAGE 2   
+
+  53          //                            Íâ²¿º¯ÊýºÍ±äÁ¿ÉùÃ÷
+  54          //========================================================================
+  55          
+  56          
+  57          //========================================================================
+  58          // º¯Êý: PCA_Capture_init
+  59          // ÃèÊö: ÓÃ»§³õÊ¼»¯³ÌÐò.
+  60          // ²ÎÊý: None.
+  61          // ·µ»Ø: None.
+  62          // °æ±¾: V1.0, 2020-09-28
+  63          //========================================================================
+  64          void PCA_Capture_init(void)
+  65          {
+  66   1              COMx_InitDefine         COMx_InitStructure;                             //½á¹¹¶¨Òå
+  67   1              PCA_InitTypeDef         PCA_InitStructure;
+  68   1      
+  69   1              P1_MODE_IN_HIZ(GPIO_Pin_0);             //P1.0 ÉèÖÃÎª¸ß×èÊäÈë
+  70   1              P1_MODE_IO_PU(GPIO_Pin_1);              //P1.1 ÉèÖÃÎª×¼Ë«Ïò¿Ú
+  71   1              P3_MODE_IO_PU(GPIO_Pin_7);              //P3.7 ÉèÖÃÎª×¼Ë«Ïò¿Ú
+  72   1              //--------------------------------------------
+  73   1              COMx_InitStructure.UART_Mode      = UART_8bit_BRTx;     //Ä£Ê½, UART_ShiftRight,UART_8bit_BRTx,UART_9bit,UART
+             -_9bit_BRTx
+  74   1              COMx_InitStructure.UART_BRT_Use   = BRT_Timer1;                 //Ê¹ÓÃ²¨ÌØÂÊ, BRT_Timer1, BRT_Timer2 (×¢Òâ: ´®¿Ú2¹Ì¶¨Ê¹
+             -ÓÃBRT_Timer2)
+  75   1              COMx_InitStructure.UART_BaudRate  = 115200ul;                   //²¨ÌØÂÊ, Ò»°ã 110 ~ 115200
+  76   1              COMx_InitStructure.UART_RxEnable  = ENABLE;                             //½ÓÊÕÔÊÐí,   ENABLE»òDISABLE
+  77   1              COMx_InitStructure.BaudRateDouble = DISABLE;                    //²¨ÌØÂÊ¼Ó±¶, ENABLE»òDISABLE
+  78   1              UART_Configuration(UART1, &COMx_InitStructure);         //³õÊ¼»¯´®¿Ú1 UART1,UART2,UART3,UART4
+  79   1              NVIC_UART1_Init(ENABLE,Priority_1);             //ÖÐ¶ÏÊ¹ÄÜ, ENABLE/DISABLE; ÓÅÏÈ¼¶(µÍµ½¸ß) Priority_0,Priority_1,Pri
+             -ority_2,Priority_3
+  80   1      
+  81   1              PrintString1("STC8G1K08 PCA Test Programme!\r\n");      //UART1·¢ËÍÒ»¸ö×Ö·û´®
+  82   1              //--------------------------------------------
+  83   1              PCA_InitStructure.PCA_Clock    = PCA_Clock_1T;          //PCA_Clock_1T, PCA_Clock_2T, PCA_Clock_4T, PCA_Clock_6T,
+             - PCA_Clock_8T, PCA_Clock_12T, PCA_Clock_Timer0_OF, PCA_Clock_ECI
+  84   1              PCA_InitStructure.PCA_RUN      = DISABLE;                                       //ENABLE, DISABLE
+  85   1              PCA_Init(PCA_Counter,&PCA_InitStructure);               //ÉèÖÃ¹«ÓÃCounter
+  86   1      
+  87   1              PCA_InitStructure.PCA_PWM_Wide = PCA_PWM_8bit;          //PCA_PWM_8bit, PCA_PWM_7bit, PCA_PWM_6bit, PCA_PWM_10bit
+  88   1              PCA_InitStructure.PCA_Value    = 128 << 8;                              //¶ÔÓÚPWM,¸ß8Î»ÎªPWMÕ¼¿Õ±È
+  89   1              PCA_Init(PCA0,&PCA_InitStructure);
+  90   1      
+  91   1              PCA_InitStructure.PCA_PWM_Wide = 0;                                                             //PCA_PWM_8bit, PCA_PWM_7bit, PCA_PWM_6bit, PCA_PWM_10bit
+  92   1              PCA_InitStructure.PCA_Value    = 0;                                                             //¶ÔÓÚ²¶»ñ, Õâ¸öÖµÃ»ÒâÒå
+  93   1              PCA_Init(PCA1,&PCA_InitStructure);
+  94   1      
+  95   1              PCA_InitStructure.PCA_PWM_Wide = 0;                                                             //PCA_PWM_8bit, PCA_PWM_7bit, PCA_PWM_6bit, PCA_PWM_10bit
+  96   1              PCA_InitStructure.PCA_Value    = 15000;                                         //¶ÔÓÚÈí¼þ¶¨Ê±, ÎªÆ¥Åä±È½ÏÖµ
+  97   1              PCA_Init(PCA2,&PCA_InitStructure);
+  98   1      
+  99   1              NVIC_PCA_Init(PCA_Counter,DISABLE,Priority_0);
+ 100   1              NVIC_PCA_Init(PCA0,PCA_Mode_PWM,Priority_0);            //PWM
+ 101   1              NVIC_PCA_Init(PCA1,PCA_Mode_Capture,Priority_0);                //Capture
+ 102   1              NVIC_PCA_Init(PCA2,PCA_Mode_HighPulseOutput,Priority_0);        //HighPulseOutput
+ 103   1              CR = 1;                                                 //Æô¶¯PCA
+ 104   1              //--------------------------------------------
+ 105   1              pwm0 = 128;
+ 106   1              B_PWM0_Dir = 0;
+ 107   1      }
+ 108          
+ 109          
+ 110          //========================================================================
+C51 COMPILER V9.59.0.0   APP_PCA_CAPTURE                                                   07/12/2025 10:38:00 PAGE 3   
+
+ 111          // º¯Êý: Sample_PCA_Capture
+ 112          // ÃèÊö: ÓÃ»§Ó¦ÓÃ³ÌÐò.
+ 113          // ²ÎÊý: None.
+ 114          // ·µ»Ø: None.
+ 115          // °æ±¾: V1.0, 2020-09-28
+ 116          //========================================================================
+ 117          void Sample_PCA_Capture(void)
+ 118          {
+ 119   1              if(B_Capture1)
+ 120   1              {
+ 121   2                      B_Capture1 = 0;
+ 122   2                      //²¶»ñÂö¿íÊ±¼ä=CCAP1_tmp/PCA_Clock, ±ÈÈç CCAP1_tmp = 256, PCA_Clock = 22.1184MHz(1T), Âö¿í = 256/22.1184
+             -MHz = 11.57us
+ 123   2                      TX1_write2buff(CCAP1_tmp/10000 + '0');
+ 124   2                      TX1_write2buff(CCAP1_tmp%10000/1000 + '0');
+ 125   2                      TX1_write2buff(CCAP1_tmp%1000/100 + '0');
+ 126   2                      TX1_write2buff(CCAP1_tmp%100/10 + '0');
+ 127   2                      TX1_write2buff(CCAP1_tmp%10 + '0');
+ 128   2                      PrintString1("\r\n");
+ 129   2              }
+ 130   1      
+ 131   1              cnt0++;
+ 132   1              if((cnt0 & 15) == 15)   //16ms
+ 133   1              {
+ 134   2                      if(B_PWM0_Dir)
+ 135   2                      {
+ 136   3                                      if(--pwm0 <= 8)         B_PWM0_Dir = 0;
+ 137   3                      }
+ 138   2                      else    if(++pwm0 >= 248)       B_PWM0_Dir = 1;
+ 139   2                      UpdatePcaPwm(PCA0,pwm0);
+ 140   2              }
+ 141   1      }
+ 142          
+ 143          
+ 144          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    436    ----
+   CONSTANT SIZE    =     35    ----
+   XDATA SIZE       =      2      14
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

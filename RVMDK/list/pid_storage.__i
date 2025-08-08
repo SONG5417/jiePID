@@ -1,0 +1,1 @@
+"..\App\src\pid_storage.c" LARGE OMF2 OPTIMIZE (8,SPEED) BROWSE INCDIR(..\Driver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\pid_storage.lst) OBJECT(.\list\pid_storage.obj)

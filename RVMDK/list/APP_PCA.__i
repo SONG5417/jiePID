@@ -1,0 +1,1 @@
+"..\App\src\APP_PCA.c" LARGE OMF2 OPTIMIZE (8,SPEED) BROWSE INCDIR(..\Driver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\APP_PCA.lst) TABS (2) OBJECT(.\list\APP_PCA.obj)

@@ -1,0 +1,402 @@
+C51 COMPILER V9.59.0.0   STC8H_PWM                                                         07/12/2025 10:38:04 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE STC8H_PWM
+OBJECT MODULE PLACED IN .\list\STC8H_PWM.obj
+COMPILER INVOKED BY: D:\KEILC51\C51\BIN\C51.EXE ..\Driver\src\STC8H_PWM.C LARGE OMF2 OPTIMIZE(8,SPEED) BROWSE INCDIR(..\
+                    -Driver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\STC8H_PWM.lst) OBJECT(.\list\STC8H_PWM.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------------------------*/
+   2          /* --- STC MCU Limited ------------------------------------------------*/
+   3          /* --- STC 1T Series MCU Demo Programme -------------------------------*/
+   4          /* --- Mobile: (86)13922805190 ----------------------------------------*/
+   5          /* --- Fax: 86-0513-55012956,55012947,55012969 ------------------------*/
+   6          /* --- Tel: 86-0513-55012928,55012929,55012966 ------------------------*/
+   7          /* --- Web: www.STCMCU.com --------------------------------------------*/
+   8          /* --- Web: www.STCMCUDATA.com  ---------------------------------------*/
+   9          /* --- QQ:  800003751 -------------------------------------------------*/
+  10          /* 如果要在程序中使用此代码,请在程序中注明使用了STC的资料及程序            */
+  11          /*---------------------------------------------------------------------*/
+  12          
+  13          #include "STC8H_PWM.h"
+  14          
+  15          //========================================================================
+  16          // 函数: PWM_Configuration
+  17          // 描述: PWM初始化程序.
+  18          // 参数: PWMx: 结构参数,请参考PWM.h里的定义.
+  19          // 返回: 成功返回 SUCCESS, 错误返回 FAIL.
+  20          // 版本: V1.0, 2012-10-22
+  21          //========================================================================
+  22          u8 PWM_Configuration(u8 PWM, PWMx_InitDefine *PWMx)
+  23          {
+  24   1              if(PWM == PWM1)
+  25   1              {
+  26   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+  27   2                      PWMA_CC1E_Disable();            //关闭输入捕获/比较输出
+  28   2                      PWMA_CC1NE_Disable();           //关闭比较输出
+  29   2                      PWMA_CC1S_Direction(CCAS_OUTPUT);               //CCnS仅在通道关闭时才是可写的
+  30   2                      PWMA_OC1ModeSet(PWMx->PWM_Mode);                //设置输出比较模式
+  31   2      
+  32   2                      if(PWMx->PWM_EnoSelect & ENO1P)
+  33   2                      {
+  34   3                              PWMA_CC1E_Enable();                     //开启输入捕获/比较输出
+  35   3                              PWMA_ENO |= ENO1P;
+  36   3                      }
+  37   2                      else
+  38   2                      {
+  39   3                              PWMA_CC1E_Disable();            //关闭输入捕获/比较输出
+  40   3                              PWMA_ENO &= ~ENO1P;
+  41   3                      }
+  42   2                      if(PWMx->PWM_EnoSelect & ENO1N)
+  43   2                      {
+  44   3                              PWMA_CC1NE_Enable();            //开启输入捕获/比较输出
+  45   3                              PWMA_ENO |= ENO1N;
+  46   3                      }
+  47   2                      else
+  48   2                      {
+  49   3                              PWMA_CC1NE_Disable();           //关闭输入捕获/比较输出
+  50   3                              PWMA_ENO &= ~ENO1N;
+  51   3                      }
+  52   2                      
+  53   2                      PWMA_Duty1(PWMx->PWM_Duty);
+  54   2                      
+C51 COMPILER V9.59.0.0   STC8H_PWM                                                         07/12/2025 10:38:04 PAGE 2   
+
+  55   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+  56   2                      return  SUCCESS;
+  57   2              }
+  58   1              
+  59   1              if(PWM == PWM2)
+  60   1              {
+  61   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+  62   2                      PWMA_CC2E_Disable();            //关闭输入捕获/比较输出
+  63   2                      PWMA_CC2NE_Disable();           //关闭比较输出
+  64   2                      PWMA_CC2S_Direction(CCAS_OUTPUT);               //CCnS仅在通道关闭时才是可写的
+  65   2                      PWMA_OC2ModeSet(PWMx->PWM_Mode);                //设置输出比较模式
+  66   2      
+  67   2                      if(PWMx->PWM_EnoSelect & ENO2P)
+  68   2                      {
+  69   3                              PWMA_CC2E_Enable();                     //开启输入捕获/比较输出
+  70   3                              PWMA_ENO |= ENO2P;
+  71   3                      }
+  72   2                      else
+  73   2                      {
+  74   3                              PWMA_CC2E_Disable();            //关闭输入捕获/比较输出
+  75   3                              PWMA_ENO &= ~ENO2P;
+  76   3                      }
+  77   2                      if(PWMx->PWM_EnoSelect & ENO2N)
+  78   2                      {
+  79   3                              PWMA_CC2NE_Enable();            //开启输入捕获/比较输出
+  80   3                              PWMA_ENO |= ENO2N;
+  81   3                      }
+  82   2                      else
+  83   2                      {
+  84   3                              PWMA_CC2NE_Disable();           //关闭输入捕获/比较输出
+  85   3                              PWMA_ENO &= ~ENO2N;
+  86   3                      }
+  87   2                      
+  88   2                      PWMA_Duty2(PWMx->PWM_Duty);
+  89   2                      
+  90   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+  91   2                      return  SUCCESS;
+  92   2              }
+  93   1              
+  94   1              if(PWM == PWM3)
+  95   1              {
+  96   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+  97   2                      PWMA_CC3E_Disable();            //关闭输入捕获/比较输出
+  98   2                      PWMA_CC3NE_Disable();           //关闭比较输出
+  99   2                      PWMA_CC3S_Direction(CCAS_OUTPUT);               //CCnS仅在通道关闭时才是可写的
+ 100   2                      PWMA_OC3ModeSet(PWMx->PWM_Mode);                //设置输出比较模式
+ 101   2      
+ 102   2                      if(PWMx->PWM_EnoSelect & ENO3P)
+ 103   2                      {
+ 104   3                              PWMA_CC3E_Enable();                     //开启输入捕获/比较输出
+ 105   3                              PWMA_ENO |= ENO3P;
+ 106   3                      }
+ 107   2                      else
+ 108   2                      {
+ 109   3                              PWMA_CC3E_Disable();            //关闭输入捕获/比较输出
+ 110   3                              PWMA_ENO &= ~ENO3P;
+ 111   3                      }
+ 112   2                      if(PWMx->PWM_EnoSelect & ENO3N)
+ 113   2                      {
+ 114   3                              PWMA_CC3NE_Enable();            //开启输入捕获/比较输出
+ 115   3                              PWMA_ENO |= ENO3N;
+ 116   3                      }
+C51 COMPILER V9.59.0.0   STC8H_PWM                                                         07/12/2025 10:38:04 PAGE 3   
+
+ 117   2                      else
+ 118   2                      {
+ 119   3                              PWMA_CC3NE_Disable();           //关闭输入捕获/比较输出
+ 120   3                              PWMA_ENO &= ~ENO3N;
+ 121   3                      }
+ 122   2                      
+ 123   2                      PWMA_Duty3(PWMx->PWM_Duty);
+ 124   2                      
+ 125   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+ 126   2                      return  SUCCESS;
+ 127   2              }
+ 128   1              
+ 129   1              if(PWM == PWM4)
+ 130   1              {
+ 131   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+ 132   2                      PWMA_CC4E_Disable();            //关闭输入捕获/比较输出
+ 133   2                      PWMA_CC4NE_Disable();           //关闭比较输出
+ 134   2                      PWMA_CC4S_Direction(CCAS_OUTPUT);               //CCnS仅在通道关闭时才是可写的
+ 135   2                      PWMA_OC4ModeSet(PWMx->PWM_Mode);                //设置输出比较模式
+ 136   2      
+ 137   2                      if(PWMx->PWM_EnoSelect & ENO4P)
+ 138   2                      {
+ 139   3                              PWMA_CC4E_Enable();                     //开启输入捕获/比较输出
+ 140   3                              PWMA_ENO |= ENO4P;
+ 141   3                      }
+ 142   2                      else
+ 143   2                      {
+ 144   3                              PWMA_CC4E_Disable();            //关闭输入捕获/比较输出
+ 145   3                              PWMA_ENO &= ~ENO4P;
+ 146   3                      }
+ 147   2                      if(PWMx->PWM_EnoSelect & ENO4N)
+ 148   2                      {
+ 149   3                              PWMA_CC4NE_Enable();            //开启输入捕获/比较输出
+ 150   3                              PWMA_ENO |= ENO4N;
+ 151   3                      }
+ 152   2                      else
+ 153   2                      {
+ 154   3                              PWMA_CC4NE_Disable();           //关闭输入捕获/比较输出
+ 155   3                              PWMA_ENO &= ~ENO4N;
+ 156   3                      }
+ 157   2                      
+ 158   2                      PWMA_Duty4(PWMx->PWM_Duty);
+ 159   2                      
+ 160   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+ 161   2                      return  SUCCESS;
+ 162   2              }
+ 163   1              
+ 164   1              if(PWM == PWMA)
+ 165   1              {
+ 166   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+ 167   2                      
+ 168   2      //              PWMA_OC1_ReloadEnable(PWMx->PWM_Reload);        //输出比较的预装载使能
+ 169   2      //              PWMA_OC1_FastEnable(PWMx->PWM_Fast);            //输出比较快速功能使能
+ 170   2      //              PWMA_CCPCAPreloaded(PWMx->PWM_PreLoad); //捕获/比较预装载控制位(该位只对具有互补输出的通道起作用)
+ 171   2      //              PWMA_BrakeEnable(PWMx->PWM_BrakeEnable);        //开启/禁止刹车输入
+ 172   2      
+ 173   2                      PWMA_DeadTime(PWMx->PWM_DeadTime);      //死区发生器设置
+ 174   2                      PWMA_AutoReload(PWMx->PWM_Period);      //周期设置
+ 175   2                      PWMA_BrakeOutputEnable(PWMx->PWM_MainOutEnable);        //主输出使能
+ 176   2                      PWMA_CEN_Enable(PWMx->PWM_CEN_Enable);  //使能计数器
+ 177   2                      
+ 178   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+C51 COMPILER V9.59.0.0   STC8H_PWM                                                         07/12/2025 10:38:04 PAGE 4   
+
+ 179   2                      return  0;
+ 180   2              }
+ 181   1      
+ 182   1              if(PWM == PWM5)
+ 183   1              {
+ 184   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+ 185   2                      PWMB_CC5E_Disable();            //关闭输入捕获/比较输出
+ 186   2                      PWMB_CC5S_Direction(CCAS_OUTPUT);               //CCnS仅在通道关闭时才是可写的
+ 187   2                      PWMB_OC5ModeSet(PWMx->PWM_Mode);                //设置输出比较模式
+ 188   2      
+ 189   2                      if(PWMx->PWM_EnoSelect & ENO5P)
+ 190   2                      {
+ 191   3                              PWMB_CC5E_Enable();                     //开启输入捕获/比较输出
+ 192   3                              PWMB_ENO |= ENO5P;
+ 193   3                      }
+ 194   2                      else
+ 195   2                      {
+ 196   3                              PWMB_CC5E_Disable();            //关闭输入捕获/比较输出
+ 197   3                              PWMB_ENO &= ~ENO5P;
+ 198   3                      }
+ 199   2                      
+ 200   2                      PWMB_Duty5(PWMx->PWM_Duty);
+ 201   2                      
+ 202   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+ 203   2                      return  SUCCESS;
+ 204   2              }
+ 205   1              
+ 206   1              if(PWM == PWM6)
+ 207   1              {
+ 208   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+ 209   2                      PWMB_CC6E_Disable();            //关闭输入捕获/比较输出
+ 210   2                      PWMB_CC6S_Direction(CCAS_OUTPUT);               //CCnS仅在通道关闭时才是可写的
+ 211   2                      PWMB_OC6ModeSet(PWMx->PWM_Mode);                //设置输出比较模式
+ 212   2      
+ 213   2                      if(PWMx->PWM_EnoSelect & ENO6P)
+ 214   2                      {
+ 215   3                              PWMB_CC6E_Enable();                     //开启输入捕获/比较输出
+ 216   3                              PWMB_ENO |= ENO6P;
+ 217   3                      }
+ 218   2                      else
+ 219   2                      {
+ 220   3                              PWMB_CC6E_Disable();            //关闭输入捕获/比较输出
+ 221   3                              PWMB_ENO &= ~ENO6P;
+ 222   3                      }
+ 223   2                      
+ 224   2                      PWMB_Duty6(PWMx->PWM_Duty);
+ 225   2                      
+ 226   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+ 227   2                      return  SUCCESS;
+ 228   2              }
+ 229   1              
+ 230   1              if(PWM == PWM7)
+ 231   1              {
+ 232   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+ 233   2                      PWMB_CC7E_Disable();            //关闭输入捕获/比较输出
+ 234   2                      PWMB_CC7S_Direction(CCAS_OUTPUT);               //CCnS仅在通道关闭时才是可写的
+ 235   2                      PWMB_OC7ModeSet(PWMx->PWM_Mode);                //设置输出比较模式
+ 236   2      
+ 237   2                      if(PWMx->PWM_EnoSelect & ENO7P)
+ 238   2                      {
+ 239   3                              PWMB_CC7E_Enable();                     //开启输入捕获/比较输出
+ 240   3                              PWMB_ENO |= ENO7P;
+C51 COMPILER V9.59.0.0   STC8H_PWM                                                         07/12/2025 10:38:04 PAGE 5   
+
+ 241   3                      }
+ 242   2                      else
+ 243   2                      {
+ 244   3                              PWMB_CC7E_Disable();            //关闭输入捕获/比较输出
+ 245   3                              PWMB_ENO &= ~ENO7P;
+ 246   3                      }
+ 247   2                      
+ 248   2                      PWMB_Duty7(PWMx->PWM_Duty);
+ 249   2                      
+ 250   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+ 251   2                      return  SUCCESS;
+ 252   2              }
+ 253   1              
+ 254   1              if(PWM == PWM8)
+ 255   1              {
+ 256   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+ 257   2                      PWMB_CC8E_Disable();            //关闭输入捕获/比较输出
+ 258   2                      PWMB_CC8S_Direction(CCAS_OUTPUT);               //CCnS仅在通道关闭时才是可写的
+ 259   2                      PWMB_OC8ModeSet(PWMx->PWM_Mode);                //设置输出比较模式
+ 260   2      
+ 261   2                      if(PWMx->PWM_EnoSelect & ENO8P)
+ 262   2                      {
+ 263   3                              PWMB_CC8E_Enable();                     //开启输入捕获/比较输出
+ 264   3                              PWMB_ENO |= ENO8P;
+ 265   3                      }
+ 266   2                      else
+ 267   2                      {
+ 268   3                              PWMB_CC8E_Disable();            //关闭输入捕获/比较输出
+ 269   3                              PWMB_ENO &= ~ENO8P;
+ 270   3                      }
+ 271   2                      
+ 272   2                      PWMB_Duty8(PWMx->PWM_Duty);
+ 273   2                      
+ 274   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+ 275   2                      return  SUCCESS;
+ 276   2              }
+ 277   1              
+ 278   1              if(PWM == PWMB)
+ 279   1              {
+ 280   2                      EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+ 281   2                      
+ 282   2      //              PWMB_OC5_ReloadEnable(PWMx->PWM_Reload);        //输出比较的预装载使能
+ 283   2      //              PWMB_OC5_FastEnable(PWMx->PWM_Fast);            //输出比较快速功能使能
+ 284   2      //              PWMB_CCPCBPreloaded(PWMx->PWM_PreLoad); //捕获/比较预装载控制位(该位只对具有互补输出的通道起作用)
+ 285   2      //              PWMB_BrakeEnable(PWMx->PWM_BrakeEnable);        //开启/禁止刹车输入
+ 286   2      
+ 287   2                      PWMB_DeadTime(PWMx->PWM_DeadTime);      //死区发生器设置
+ 288   2                      PWMB_AutoReload(PWMx->PWM_Period);      //周期设置
+ 289   2                      PWMB_BrakeOutputEnable(PWMx->PWM_MainOutEnable);        //主输出使能
+ 290   2                      PWMB_CEN_Enable(PWMx->PWM_CEN_Enable);  //使能计数器
+ 291   2                      
+ 292   2                      EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+ 293   2                      return  0;
+ 294   2              }
+ 295   1      
+ 296   1              return  FAIL;   //错误
+ 297   1      }
+ 298          
+ 299          //========================================================================
+ 300          // 函数: UpdatePwm
+ 301          // 描述: PWM占空比更新程序.
+ 302          // 参数: PWM: PWM通道/组号, PWMx结构参数,请参考PWM.h里的定义.
+C51 COMPILER V9.59.0.0   STC8H_PWM                                                         07/12/2025 10:38:04 PAGE 6   
+
+ 303          // 返回: none.
+ 304          // 版本: V1.0, 2012-10-22
+ 305          //========================================================================
+ 306          void UpdatePwm(u8 PWM, PWMx_Duty *PWMx)
+ 307          {
+ 308   1              EAXSFR();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展SFR(XSFR) */
+ 309   1      
+ 310   1              switch(PWM)
+ 311   1              {
+ 312   2                      case PWM1:
+ 313   2                              PWMA_Duty1(PWMx->PWM1_Duty);
+ 314   2                      break;
+ 315   2      
+ 316   2                      case PWM2:
+ 317   2                              PWMA_Duty2(PWMx->PWM2_Duty);
+ 318   2                      break;
+ 319   2      
+ 320   2                      case PWM3:
+ 321   2                              PWMA_Duty3(PWMx->PWM3_Duty);
+ 322   2                      break;
+ 323   2      
+ 324   2                      case PWM4:
+ 325   2                              PWMA_Duty4(PWMx->PWM4_Duty);
+ 326   2                      break;
+ 327   2      
+ 328   2                      case PWM5:
+ 329   2                              PWMB_Duty5(PWMx->PWM5_Duty);
+ 330   2                      break;
+ 331   2      
+ 332   2                      case PWM6:
+ 333   2                              PWMB_Duty6(PWMx->PWM6_Duty);
+ 334   2                      break;
+ 335   2      
+ 336   2                      case PWM7:
+ 337   2                              PWMB_Duty7(PWMx->PWM7_Duty);
+ 338   2                      break;
+ 339   2      
+ 340   2                      case PWM8:
+ 341   2                              PWMB_Duty8(PWMx->PWM8_Duty);
+ 342   2                      break;
+ 343   2      
+ 344   2                      case PWMA:
+ 345   2                              PWMA_Duty1(PWMx->PWM1_Duty);
+ 346   2                              PWMA_Duty2(PWMx->PWM2_Duty);
+ 347   2                              PWMA_Duty3(PWMx->PWM3_Duty);
+ 348   2                              PWMA_Duty4(PWMx->PWM4_Duty);
+ 349   2                      break;
+ 350   2      
+ 351   2                      case PWMB:
+ 352   2                              PWMB_Duty5(PWMx->PWM5_Duty);
+ 353   2                              PWMB_Duty6(PWMx->PWM6_Duty);
+ 354   2                              PWMB_Duty7(PWMx->PWM7_Duty);
+ 355   2                              PWMB_Duty8(PWMx->PWM8_Duty);
+ 356   2                      break;
+ 357   2              }
+ 358   1              
+ 359   1              EAXRAM();               /* MOVX A,@DPTR/MOVX @DPTR,A指令的操作对象为扩展RAM(XRAM) */
+ 360   1      }
+ 361          
+ 362          /*********************************************************/
+
+
+C51 COMPILER V9.59.0.0   STC8H_PWM                                                         07/12/2025 10:38:04 PAGE 7   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1274    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,208 @@
+C51 COMPILER V9.59.0.0   APP_PWMA_OUTPUT                                                   07/12/2025 10:37:59 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE APP_PWMA_OUTPUT
+OBJECT MODULE PLACED IN .\list\APP_PWMA_Output.obj
+COMPILER INVOKED BY: D:\KEILC51\C51\BIN\C51.EXE ..\App\src\APP_PWMA_Output.c LARGE OMF2 OPTIMIZE(8,SPEED) BROWSE INCDIR(
+                    -..\Driver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\APP_PWMA_Output.lst) OBJECT(.\list\APP_PWMA_Output.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------------------------*/
+   2          /* --- STC MCU Limited ------------------------------------------------*/
+   3          /* --- STC 1T Series MCU Demo Programme -------------------------------*/
+   4          /* --- Mobile: (86)13922805190 ----------------------------------------*/
+   5          /* --- Fax: 86-0513-55012956,55012947,55012969 ------------------------*/
+   6          /* --- Tel: 86-0513-55012928,55012929,55012966 ------------------------*/
+   7          /* --- Web: www.STCMCU.com --------------------------------------------*/
+   8          /* --- Web: www.STCMCUDATA.com  ---------------------------------------*/
+   9          /* --- QQ:  800003751 -------------------------------------------------*/
+  10          /* Èç¹ûÒªÔÚ³ÌÐòÖÐÊ¹ÓÃ´Ë´úÂë,ÇëÔÚ³ÌÐòÖÐ×¢Ã÷Ê¹ÓÃÁËSTCµÄ×ÊÁÏ¼°³ÌÐò            */
+  11          /*---------------------------------------------------------------------*/
+  12          
+  13          #include        "APP.h"
+  14          #include        "STC8H_PWM.h"
+  15          #include        "STC8G_H_GPIO.h"
+  16          #include        "STC8G_H_NVIC.h"
+  17          
+  18          /*************  ¹¦ÄÜËµÃ÷        **************
+  19          
+  20          ±¾Àý³Ì»ùÓÚSTC8H8K64UÎªÖ÷¿ØÐ¾Æ¬µÄÊµÑéÏä8½øÐÐ±àÐ´²âÊÔ£¬STC8HÏµÁÐÐ¾Æ¬¿ÉÍ¨ÓÃ²Î¿¼.
+  21          
+  22          ¸ß¼¶PWM¶¨Ê±Æ÷ PWM1P/PWM1N,PWM2P/PWM2N,PWM3P/PWM3N,PWM4P/PWM4N Ã¿¸öÍ¨µÀ¶¼¿É¶ÀÁ¢ÊµÏÖPWMÊä³ö£¬»òÕßÁ½Á½»¥²¹¶Ô³
+             -ÆÊä³ö.
+  23          
+  24          8¸öÍ¨µÀPWMÉèÖÃ¶ÔÓ¦P6µÄ8¸ö¶Ë¿Ú.
+  25          
+  26          Í¨¹ýP6¿ÚÉÏÁ¬½ÓµÄ8¸öLEDµÆ£¬ÀûÓÃPWMÊµÏÖºôÎüµÆÐ§¹û.
+  27          
+  28          PWMÖÜÆÚºÍÕ¼¿Õ±È¿ÉÒÔ¸ù¾ÝÐèÒª×ÔÐÐÉèÖÃ£¬×î¸ß¿É´ï65535.
+  29          
+  30          ÏÂÔØÊ±, Ñ¡ÔñÊ±ÖÓ 24MHZ (ÓÃ»§¿ÉÔÚ"config.h"ÐÞ¸ÄÆµÂÊ).
+  31          
+  32          ******************************************/
+  33          
+  34          
+  35          //========================================================================
+  36          //                               ±¾µØ³£Á¿ÉùÃ÷   
+  37          //========================================================================
+  38          
+  39          
+  40          //========================================================================
+  41          //                               ±¾µØ±äÁ¿ÉùÃ÷
+  42          //========================================================================
+  43          
+  44          PWMx_Duty PWMA_Duty;
+  45          bit PWM1_Flag;
+  46          bit PWM2_Flag;
+  47          bit PWM3_Flag;
+  48          bit PWM4_Flag;
+  49          
+  50          //========================================================================
+  51          //                               ±¾µØº¯ÊýÉùÃ÷
+  52          //========================================================================
+  53          
+C51 COMPILER V9.59.0.0   APP_PWMA_OUTPUT                                                   07/12/2025 10:37:59 PAGE 2   
+
+  54          
+  55          //========================================================================
+  56          //                            Íâ²¿º¯ÊýºÍ±äÁ¿ÉùÃ÷
+  57          //========================================================================
+  58          
+  59          
+  60          //========================================================================
+  61          // º¯Êý: PWMA_Output_init
+  62          // ÃèÊö: ÓÃ»§³õÊ¼»¯³ÌÐò.
+  63          // ²ÎÊý: None.
+  64          // ·µ»Ø: None.
+  65          // °æ±¾: V1.0, 2020-09-28
+  66          //========================================================================
+  67          void PWMA_Output_init(void)
+  68          {
+  69   1              PWMx_InitDefine         PWMx_InitStructure;
+  70   1              
+  71   1              PWMA_Duty.PWM1_Duty = 128;
+  72   1              PWMA_Duty.PWM2_Duty = 256;
+  73   1              PWMA_Duty.PWM3_Duty = 512;
+  74   1              PWMA_Duty.PWM4_Duty = 1024;
+  75   1      
+  76   1              PWMx_InitStructure.PWM_Mode    =        CCMRn_PWM_MODE1;        //Ä£Ê½,         CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INV
+             -ALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  77   1              PWMx_InitStructure.PWM_Duty    = PWMA_Duty.PWM1_Duty;   //PWMÕ¼¿Õ±ÈÊ±¼ä, 0~Period
+  78   1              PWMx_InitStructure.PWM_EnoSelect   = ENO1P | ENO1N;     //Êä³öÍ¨µÀÑ¡Ôñ, ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,E
+             -NO4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  79   1              PWM_Configuration(PWM1, &PWMx_InitStructure);                           //³õÊ¼»¯PWM,  PWMA,PWMB
+  80   1      
+  81   1              PWMx_InitStructure.PWM_Mode    =        CCMRn_PWM_MODE1;        //Ä£Ê½,         CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INV
+             -ALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  82   1              PWMx_InitStructure.PWM_Duty    = PWMA_Duty.PWM2_Duty;   //PWMÕ¼¿Õ±ÈÊ±¼ä, 0~Period
+  83   1              PWMx_InitStructure.PWM_EnoSelect   = ENO2P | ENO2N;     //Êä³öÍ¨µÀÑ¡Ôñ, ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,E
+             -NO4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  84   1              PWM_Configuration(PWM2, &PWMx_InitStructure);                           //³õÊ¼»¯PWM,  PWMA,PWMB
+  85   1      
+  86   1              PWMx_InitStructure.PWM_Mode    =        CCMRn_PWM_MODE1;        //Ä£Ê½,         CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INV
+             -ALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  87   1              PWMx_InitStructure.PWM_Duty    = PWMA_Duty.PWM3_Duty;   //PWMÕ¼¿Õ±ÈÊ±¼ä, 0~Period
+  88   1              PWMx_InitStructure.PWM_EnoSelect   = ENO3P | ENO3N;     //Êä³öÍ¨µÀÑ¡Ôñ, ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,E
+             -NO4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  89   1              PWM_Configuration(PWM3, &PWMx_InitStructure);                           //³õÊ¼»¯PWM,  PWMA,PWMB
+  90   1      
+  91   1              PWMx_InitStructure.PWM_Mode    =        CCMRn_PWM_MODE1;        //Ä£Ê½,         CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INV
+             -ALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  92   1              PWMx_InitStructure.PWM_Duty    = PWMA_Duty.PWM4_Duty;   //PWMÕ¼¿Õ±ÈÊ±¼ä, 0~Period
+  93   1              PWMx_InitStructure.PWM_EnoSelect   = ENO4P | ENO4N;     //Êä³öÍ¨µÀÑ¡Ôñ, ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,E
+             -NO4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  94   1              PWM_Configuration(PWM4, &PWMx_InitStructure);                           //³õÊ¼»¯PWM,  PWMA,PWMB
+  95   1      
+  96   1              PWMx_InitStructure.PWM_Period   = 2047;                                                 //ÖÜÆÚÊ±¼ä,   0~65535
+  97   1              PWMx_InitStructure.PWM_DeadTime = 0;                                                            //ËÀÇø·¢ÉúÆ÷ÉèÖÃ, 0~255
+  98   1              PWMx_InitStructure.PWM_MainOutEnable= ENABLE;                           //Ö÷Êä³öÊ¹ÄÜ, ENABLE,DISABLE
+  99   1              PWMx_InitStructure.PWM_CEN_Enable   = ENABLE;                           //Ê¹ÄÜ¼ÆÊýÆ÷, ENABLE,DISABLE
+ 100   1              PWM_Configuration(PWMA, &PWMx_InitStructure);                           //³õÊ¼»¯PWMÍ¨ÓÃ¼Ä´æÆ÷,  PWMA,PWMB
+ 101   1      
+ 102   1              P4_MODE_IO_PU(GPIO_Pin_0);                      //P4.0 ÉèÖÃÎª×¼Ë«Ïò¿Ú
+ 103   1              P6_MODE_IO_PU(GPIO_Pin_All);            //P6 ÉèÖÃÎª×¼Ë«Ïò¿Ú
+ 104   1              NVIC_PWM_Init(PWMA,DISABLE,Priority_0);
+ 105   1              P40 = 0;                //´ò¿ªLEDµçÔ´
+ 106   1      }
+ 107          
+C51 COMPILER V9.59.0.0   APP_PWMA_OUTPUT                                                   07/12/2025 10:37:59 PAGE 3   
+
+ 108          //========================================================================
+ 109          // º¯Êý: Sample_PWMA_Output
+ 110          // ÃèÊö: ÓÃ»§Ó¦ÓÃ³ÌÐò.
+ 111          // ²ÎÊý: None.
+ 112          // ·µ»Ø: None.
+ 113          // °æ±¾: V1.0, 2020-09-28
+ 114          //========================================================================
+ 115          void Sample_PWMA_Output(void)
+ 116          {
+ 117   1              if(!PWM1_Flag)
+ 118   1              {
+ 119   2                      PWMA_Duty.PWM1_Duty++;
+ 120   2                      if(PWMA_Duty.PWM1_Duty >= 2047) PWM1_Flag = 1;
+ 121   2              }
+ 122   1              else
+ 123   1              {
+ 124   2                      PWMA_Duty.PWM1_Duty--;
+ 125   2                      if(PWMA_Duty.PWM1_Duty <= 0) PWM1_Flag = 0;
+ 126   2              }
+ 127   1      
+ 128   1              if(!PWM2_Flag)
+ 129   1              {
+ 130   2                      PWMA_Duty.PWM2_Duty++;
+ 131   2                      if(PWMA_Duty.PWM2_Duty >= 2047) PWM2_Flag = 1;
+ 132   2              }
+ 133   1              else
+ 134   1              {
+ 135   2                      PWMA_Duty.PWM2_Duty--;
+ 136   2                      if(PWMA_Duty.PWM2_Duty <= 0) PWM2_Flag = 0;
+ 137   2              }
+ 138   1      
+ 139   1              if(!PWM3_Flag)
+ 140   1              {
+ 141   2                      PWMA_Duty.PWM3_Duty++;
+ 142   2                      if(PWMA_Duty.PWM3_Duty >= 2047) PWM3_Flag = 1;
+ 143   2              }
+ 144   1              else
+ 145   1              {
+ 146   2                      PWMA_Duty.PWM3_Duty--;
+ 147   2                      if(PWMA_Duty.PWM3_Duty <= 0) PWM3_Flag = 0;
+ 148   2              }
+ 149   1      
+ 150   1              if(!PWM4_Flag)
+ 151   1              {
+ 152   2                      PWMA_Duty.PWM4_Duty++;
+ 153   2                      if(PWMA_Duty.PWM4_Duty >= 2047) PWM4_Flag = 1;
+ 154   2              }
+ 155   1              else
+ 156   1              {
+ 157   2                      PWMA_Duty.PWM4_Duty--;
+ 158   2                      if(PWMA_Duty.PWM4_Duty <= 0) PWM4_Flag = 0;
+ 159   2              }
+ 160   1              
+ 161   1              UpdatePwm(PWMA, &PWMA_Duty);
+ 162   1      }
+ 163          
+ 164          
+ 165          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    510    ----
+C51 COMPILER V9.59.0.0   APP_PWMA_OUTPUT                                                   07/12/2025 10:37:59 PAGE 4   
+
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     16       9
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      4    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

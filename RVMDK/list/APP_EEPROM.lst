@@ -1,0 +1,264 @@
+C51 COMPILER V9.59.0.0   APP_EEPROM                                                        07/12/2025 10:37:59 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE APP_EEPROM
+OBJECT MODULE PLACED IN .\list\APP_EEPROM.obj
+COMPILER INVOKED BY: D:\KEILC51\C51\BIN\C51.EXE ..\App\src\APP_EEPROM.c LARGE OMF2 OPTIMIZE(8,SPEED) BROWSE INCDIR(..\Dr
+                    -iver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\APP_EEPROM.lst) OBJECT(.\list\APP_EEPROM.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------------------------*/
+   2          /* --- STC MCU Limited ------------------------------------------------*/
+   3          /* --- STC 1T Series MCU Demo Programme -------------------------------*/
+   4          /* --- Mobile: (86)13922805190 ----------------------------------------*/
+   5          /* --- Fax: 86-0513-55012956,55012947,55012969 ------------------------*/
+   6          /* --- Tel: 86-0513-55012928,55012929,55012966 ------------------------*/
+   7          /* --- Web: www.STCMCU.com --------------------------------------------*/
+   8          /* --- Web: www.STCMCUDATA.com  ---------------------------------------*/
+   9          /* --- QQ:  800003751 -------------------------------------------------*/
+  10          /* 如果要在程序中使用此代码,请在程序中注明使用了STC的资料及程序            */
+  11          /*---------------------------------------------------------------------*/
+  12          
+  13          #include        "APP.h"
+  14          #include        "STC8G_H_EEPROM.h"
+  15          #include        "STC8G_H_UART.h"
+  16          #include        "STC8G_H_NVIC.h"
+  17          
+  18          /*************  本程序功能说明  **************
+  19          
+  20          本例程基于STC8H8K64U为主控芯片的实验箱8进行编写测试，STC8G、STC8H系列芯片可通用参考.
+  21          
+  22          通过串口对STC内部自带的EEPROM(FLASH)进行读写测试。
+  23          
+  24          对FLASH做扇区擦除、写入、读出的操作，命令指定地址。
+  25          
+  26          默认波特率:  115200,N,8,1. 
+  27          
+  28          串口命令设置: (命令字母不区分大小写)
+  29              E 0x0040             --> 对0x0040地址扇区内容进行擦除.
+  30              W 0x0040 1234567890  --> 对0x0040地址写入字符1234567890.
+  31              R 0x0040 10          --> 对0x0040地址读出10个字节数据. 
+  32          
+  33          注意：下载时，下载界面"硬件选项"中设置用户EEPROM大小，
+  34          
+  35          并确保串口命令中的地址在EEPROM设置的大小范围之内。
+  36          
+  37          下载时, 选择时钟 22.1184MHz (可以在配置文件"config.h"中修改).
+  38          
+  39          ******************************************/
+  40          
+  41          
+  42          //========================================================================
+  43          //                               本地常量声明   
+  44          //========================================================================
+  45          
+  46          #define     Max_Length       100    //读写EEPROM缓冲长度
+  47          
+  48          //========================================================================
+  49          //                               本地变量声明
+  50          //========================================================================
+  51          
+  52          u8  xdata   tmp[Max_Length];        //EEPROM操作缓冲
+  53          
+  54          //========================================================================
+C51 COMPILER V9.59.0.0   APP_EEPROM                                                        07/12/2025 10:37:59 PAGE 2   
+
+  55          //                               本地函数声明
+  56          //========================================================================
+  57          
+  58          
+  59          //========================================================================
+  60          //                            外部函数和变量声明
+  61          //========================================================================
+  62          
+  63          
+  64          //========================================================================
+  65          // 函数: EEPROM_init
+  66          // 描述: 用户初始化程序.
+  67          // 参数: None.
+  68          // 返回: None.
+  69          // 版本: V1.0, 2020-09-28
+  70          //========================================================================
+  71          void EEPROM_init(void)
+  72          {
+  73   1              COMx_InitDefine         COMx_InitStructure;                                     //结构定义
+  74   1      
+  75   1              COMx_InitStructure.UART_Mode      = UART_8bit_BRTx;     //模式, UART_ShiftRight,UART_8bit_BRTx,UART_9bit,UART
+             -_9bit_BRTx
+  76   1              COMx_InitStructure.UART_BRT_Use   = BRT_Timer1;                 //使用波特率, BRT_Timer1, BRT_Timer2 (注意: 串口2固定使
+             -用BRT_Timer2)
+  77   1              COMx_InitStructure.UART_BaudRate  = 115200ul;                   //波特率, 一般 110 ~ 115200
+  78   1              COMx_InitStructure.UART_RxEnable  = ENABLE;                             //接收允许,   ENABLE或DISABLE
+  79   1              COMx_InitStructure.BaudRateDouble = DISABLE;                    //波特率加倍, ENABLE或DISABLE
+  80   1              UART_Configuration(UART1, &COMx_InitStructure);         //初始化串口1 UART1,UART2,UART3,UART4
+  81   1              NVIC_UART1_Init(ENABLE,Priority_1);             //中断使能, ENABLE/DISABLE; 优先级(低到高) Priority_0,Priority_1,Pri
+             -ority_2,Priority_3
+  82   1      
+  83   1              PrintString1("STC8系列单片机EEPROM测试程序，串口命令设置如下:\r\n");    //UART1发送一个字符串
+  84   1              PrintString1("E 0x0040             --> 对0x0040地址扇区内容进行擦除.\r\n");     //UART1发送一个字符串
+  85   1              PrintString1("W 0x0040 1234567890  --> 对0x0040地址写入字符1234567890.\r\n");  //UART1发送一个字符串
+  86   1              PrintString1("R 0x0040 10          --> 对0x0040地址读出10个字节内容.\r\n");    //UART1发送一个字符串
+  87   1      }
+  88          
+  89          //========================================================================
+  90          // 函数: CheckData
+  91          // 描述: 数据校验函数.
+  92          // 参数: None.
+  93          // 返回: None.
+  94          // 版本: V1.0, 2020-09-28
+  95          //========================================================================
+  96          u8      CheckData(u8 dat)
+  97          {
+  98   1              if((dat >= '0') && (dat <= '9'))                return (dat-'0');
+  99   1              if((dat >= 'A') && (dat <= 'F'))                return (dat-'A'+10);
+ 100   1              if((dat >= 'a') && (dat <= 'f'))                return (dat-'a'+10);
+ 101   1              return 0xff;
+ 102   1      }
+ 103          
+ 104          //========================================================================
+ 105          // 函数: GetAddress
+ 106          // 描述: 计算各种输入方式的地址.
+ 107          // 参数: 无.
+ 108          // 返回: 16位EEPROM地址.
+ 109          // 版本: V1.0, 2013-6-6
+ 110          //========================================================================
+ 111          u16 GetAddress(void)
+ 112          {
+ 113   1              u16 address;
+C51 COMPILER V9.59.0.0   APP_EEPROM                                                        07/12/2025 10:37:59 PAGE 3   
+
+ 114   1              u8  i,j;
+ 115   1              
+ 116   1              address = 0;
+ 117   1              if((RX1_Buffer[2] == '0') && (RX1_Buffer[3] == 'X'))
+ 118   1              {
+ 119   2                      for(i=4; i<8; i++)
+ 120   2                      {
+ 121   3                              j = CheckData(RX1_Buffer[i]);
+ 122   3                              if(j >= 0x10)   return 65535;   //error
+ 123   3                              address = (address << 4) + j;
+ 124   3                      }
+ 125   2                      return (address);
+ 126   2              }
+ 127   1              return  65535;  //error
+ 128   1      }
+ 129          
+ 130          //========================================================================
+ 131          // 函数: GetDataLength
+ 132          // 描述: 获取要读出数据的字节数.
+ 133          // 参数: 无.
+ 134          // 返回: 1要读出数据的字节数.
+ 135          // 版本: V1.0, 2013-6-6
+ 136          //========================================================================
+ 137          u8 GetDataLength(void)
+ 138          {
+ 139   1              u8  i;
+ 140   1              u8  length;
+ 141   1              
+ 142   1              length = 0;
+ 143   1              for(i=9; i<COM1.RX_Cnt; i++)
+ 144   1              {
+ 145   2                      if(CheckData(RX1_Buffer[i]) >= 10)  break;
+ 146   2                      length = length * 10 + CheckData(RX1_Buffer[i]);
+ 147   2              }
+ 148   1              return (length);
+ 149   1      }
+ 150          
+ 151          //========================================================================
+ 152          // 函数: Sample_EEPROM
+ 153          // 描述: 用户应用程序.
+ 154          // 参数: None.
+ 155          // 返回: None.
+ 156          // 版本: V1.0, 2020-09-28
+ 157          //========================================================================
+ 158          void Sample_EEPROM(void)
+ 159          {
+ 160   1              u8  i,j;
+ 161   1              u16 addr;
+ 162   1              u8  status;
+ 163   1      
+ 164   1              if(COM1.RX_TimeOut > 0)         //超时计数
+ 165   1              {
+ 166   2                      if(--COM1.RX_TimeOut == 0)
+ 167   2                      {
+ 168   3                              for(i=0; i<COM1.RX_Cnt; i++)    TX1_write2buff(RX1_Buffer[i]);    //把收到的数据原样返回,用于测试
+ 169   3      
+ 170   3                              status = 0xff;  //状态给一个非0值
+ 171   3                              if((COM1.RX_Cnt >= 8) && (RX1_Buffer[1] == ' ')) //最短命令为8个字节
+ 172   3                              {
+ 173   4                                      for(i=0; i<8; i++)
+ 174   4                                      {
+ 175   5                                              if((RX1_Buffer[i] >= 'a') && (RX1_Buffer[i] <= 'z'))    RX1_Buffer[i] = RX1_Buffer[i] - 'a' + 'A';  /
+C51 COMPILER V9.59.0.0   APP_EEPROM                                                        07/12/2025 10:37:59 PAGE 4   
+
+             -/小写转大写
+ 176   5                                      }
+ 177   4                                      addr = GetAddress();
+ 178   4                                      if(addr < 63488)    //限制在0~123扇区
+ 179   4                                      {
+ 180   5                                              if(RX1_Buffer[0] == 'E')    //写入N个字节
+ 181   5                                              {
+ 182   6                                                      EEPROM_SectorErase(addr);           //擦除扇区
+ 183   6                                                      PrintString1("擦除成功！\r\n");
+ 184   6                                                      status = 0; //命令正确
+ 185   6                                              }
+ 186   5      
+ 187   5                                              else if((RX1_Buffer[0] == 'W') && (RX1_Buffer[8] == ' '))    //写入N个字节
+ 188   5                                              {
+ 189   6                                                      j = COM1.RX_Cnt - 9;
+ 190   6                                                      if(j > Max_Length)  j = Max_Length; //越界检测
+ 191   6                                                      //EEPROM_SectorErase(addr);           //擦除扇区
+ 192   6                                                      EEPROM_write_n(addr,&RX1_Buffer[9],j);      //写N个字节
+ 193   6                                                      PrintString1("已写入");
+ 194   6                                                      if(j >= 100)    {TX1_write2buff(j/100+'0');   j = j % 100;}
+ 195   6                                                      if(j >= 10)     {TX1_write2buff(j/10+'0');    j = j % 10;}
+ 196   6                                                      TX1_write2buff(j%10+'0');
+ 197   6                                                      PrintString1("字节！\r\n");
+ 198   6                                                      status = 0; //命令正确
+ 199   6                                              }
+ 200   5      
+ 201   5                                              else if((RX1_Buffer[0] == 'R') && (RX1_Buffer[8] == ' '))   //PC请求返回N字节EEPROM数据
+ 202   5                                              {
+ 203   6                                                      j = GetDataLength();
+ 204   6                                                      if(j > Max_Length)  j = Max_Length; //越界检测
+ 205   6                                                      if(j > 0)
+ 206   6                                                      {
+ 207   7                                                              PrintString1("读出");
+ 208   7                                                              TX1_write2buff(j/10+'0');
+ 209   7                                                              TX1_write2buff(j%10+'0');
+ 210   7                                                              PrintString1("个字节内容如下：\r\n");
+ 211   7                                                              EEPROM_read_n(addr,tmp,j);
+ 212   7                                                              for(i=0; i<j; i++)  TX1_write2buff(tmp[i]);
+ 213   7                                                              TX1_write2buff(0x0d);
+ 214   7                                                              TX1_write2buff(0x0a);
+ 215   7                                                              status = 0; //命令正确
+ 216   7                                                      }
+ 217   6                                              }
+ 218   5                                      }
+ 219   4                              }
+ 220   3                              if(status != 0) PrintString1("命令错误！\r\n");
+ 221   3                              COM1.RX_Cnt = 0;
+ 222   3                      }
+ 223   2              }
+ 224   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    904    ----
+   CONSTANT SIZE    =    287    ----
+   XDATA SIZE       =    100      14
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+C51 COMPILER V9.59.0.0   APP_EEPROM                                                        07/12/2025 10:37:59 PAGE 5   
+
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

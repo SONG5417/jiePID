@@ -1,0 +1,81 @@
+C51 COMPILER V9.59.0.0   PID_STORAGE                                                       08/05/2025 21:01:24 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PID_STORAGE
+OBJECT MODULE PLACED IN .\list\pid_storage.obj
+COMPILER INVOKED BY: D:\KEILC51\C51\BIN\C51.EXE ..\App\src\pid_storage.c LARGE OMF2 OPTIMIZE(8,SPEED) BROWSE INCDIR(..\D
+                    -river\inc;..\User;..\App\inc) DEBUG PRINT(.\list\pid_storage.lst) OBJECT(.\list\pid_storage.obj)
+
+line level    source
+
+   1          #include "pid_storage.h"
+   2          #include "STC8G_H_EEPROM.h"
+   3          #include "APP_PWMB_Output.h"  // 包含PID_SCALE定义
+   4          
+   5          // 声明外部变量
+   6          extern float g_kP, g_kI, g_kD;  // 修改为float类型
+   7          
+   8          // 从EEPROM加载PID参数
+   9          void PID_LoadParams(void) {
+  10   1          PID_Params_t params;
+  11   1          
+  12   1          // 读取EEPROM中的参数
+  13   1          EEPROM_read_n(PID_PARAMS_ADDR, (u8 *)&params, sizeof(PID_Params_t));
+  14   1          
+  15   1          // 检查是否是首次使用（全0xFFFF）
+  16   1          if(params.kP == 0xFFFF && params.kI == 0xFF && params.kD == 0xFF) {
+  17   2              // 使用默认值（整数形式）
+  18   2              u16 default_kP = 1500;  // 默认P值 15.0 * 100 (16位) - 降低P值减少振荡
+  19   2              u8 default_kI = 15;     // 默认I值 15 (8位) - 直接使用整数值
+  20   2              u8 default_kD = 100;    // 默认D值 1.0 * 100 (8位) - 增加D值提高稳定性
+  21   2              
+  22   2              // 转换为浮点数并赋值
+  23   2              g_kP = (float)default_kP / PID_SCALE;
+  24   2              g_kI = (float)default_kI / 10; // I参数直接转换
+  25   2              g_kD = (float)default_kD / 10; // D参数缩放转换
+  26   2              
+  27   2              // 保存默认值到EEPROM
+  28   2              PID_SaveParams();
+  29   2          } else {
+  30   2              // 使用EEPROM中的值，转换为浮点数
+  31   2              g_kP = (float)params.kP / PID_SCALE;
+  32   2              g_kI = (float)params.kI / 10; // I参数直接转换
+  33   2              g_kD = (float)params.kD / 10; // D参数缩放转换
+  34   2          }
+  35   1      }
+  36          
+  37          // 保存PID参数到EEPROM
+  38          void PID_SaveParams(void) {
+  39   1          PID_Params_t params;
+  40   1          
+  41   1          // 将浮点数参数转换为整数形式存储
+  42   1          params.kP = (u16)(g_kP * PID_SCALE);  // 16位
+  43   1          params.kI = (u8)(g_kI * 10);   // 8位，I参数直接转换
+  44   1          params.kD = (u8)(g_kD * 10);   // 8位，D参数缩放转换
+  45   1          
+  46   1          // 先擦除扇区
+  47   1          EEPROM_SectorErase(PID_PARAMS_ADDR);
+  48   1          
+  49   1          // 写入新参数
+  50   1          EEPROM_write_n(PID_PARAMS_ADDR, (u8 *)&params, sizeof(PID_Params_t));
+  51   1      } 
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.59.0.0   PID_STORAGE                                                       08/05/2025 21:01:24 PAGE 2   
+
+   CODE SIZE        =    347    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      12
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

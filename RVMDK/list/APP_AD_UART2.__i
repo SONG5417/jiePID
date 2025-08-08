@@ -1,0 +1,1 @@
+"..\App\src\APP_AD_UART2.c" LARGE OMF2 OPTIMIZE (8,SPEED) BROWSE INCDIR(..\Driver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\APP_AD_UART2.lst) OBJECT(.\list\APP_AD_UART2.obj)

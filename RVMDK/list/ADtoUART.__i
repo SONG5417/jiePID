@@ -1,0 +1,1 @@
+"..\App\src\ADtoUART.c" LARGE OMF2 OPTIMIZE (8,SPEED) BROWSE INCDIR(..\Driver\inc;..\User;..\App\inc) DEBUG PRINT(.\list\ADtoUART.lst) TABS (2) OBJECT(.\list\ADtoUART.obj)
