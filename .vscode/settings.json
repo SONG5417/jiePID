@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "app_int_uart1.h": "c",
+        "stc8g_h_nvic.h": "c",
+        "STC8G_H_UART_Isr.C": "cpp",
+        "pid_config.h": "c",
+        "app_pwmb_output.h": "c",
+        "APP.H": "cpp",
+        "stc8g_h_gpio.h": "c",
+        "app_pwm.h": "c"
+    }
+}
