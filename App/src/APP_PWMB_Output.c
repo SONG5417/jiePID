@@ -207,8 +207,8 @@ float PID_Choice(
     
 
     
-    // 计算偏差 - 修复误差计算逻辑
-    err_now = (float)(User_Target - current); // 直接计算误差：目标值 - 当前值
+    // 计算偏差 - 先转为浮点再相减，避免无符号减法导致的下溢
+    err_now = (float)User_Target - (float)current; // 误差 = 目标值 - 当前值
     
     // 更新积分项
     deviation_SUM += err_now;    // 误差累加
